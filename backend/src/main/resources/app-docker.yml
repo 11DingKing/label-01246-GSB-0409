@@ -1,0 +1,12 @@
+server:
+  port: 8082
+
+# Docker 环境数据源配置（覆盖默认配置）
+solon.dataSources:
+  db1!:
+    class: "com.zaxxer.hikari.HikariDataSource"
+    jdbcUrl: "jdbc:mysql://mysql:3306/wind_power_diag?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci"
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    username: "root"
+    password: "root"
+    maximumPoolSize: 20

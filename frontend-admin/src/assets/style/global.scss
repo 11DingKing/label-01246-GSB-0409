@@ -1,0 +1,351 @@
+/* 全局样式 - 深色科技风 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 14px;
+  color: #F2F3F5;
+  background-color: #17171a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== 字体层级 ========== */
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #F2F3F5;
+}
+h2 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #F2F3F5;
+}
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #F2F3F5;
+}
+h4 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #F2F3F5;
+}
+.text-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #C9CDD4;
+}
+.text-small {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #A9AEB8;
+}
+.text-caption {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #6B7075;
+}
+
+/* ========== Arco Design 深色主题覆盖 ========== */
+body {
+  --color-bg-1: #17171a;
+  --color-bg-2: #1d1d1f;
+  --color-bg-3: #232324;
+  --color-bg-4: #2a2a2c;
+  --color-bg-5: #333335;
+  --color-text-1: #F2F3F5;
+  --color-text-2: #C9CDD4;
+  --color-text-3: #A9AEB8;
+  --color-text-4: #6B7075;
+  --color-border: #333335;
+  --color-border-2: #3a3a3c;
+  --color-fill-1: #232324;
+  --color-fill-2: #2a2a2c;
+  --color-fill-3: #333335;
+  --color-fill-4: #3a3a3c;
+  --color-primary-light-1: #165DFF;
+}
+
+/* ========== 全局过渡动画 ========== */
+a, .arco-btn, .arco-tag, .arco-menu-item, .arco-table-tr {
+  transition: all 0.2s ease;
+}
+
+/* ========== 滚动条 ========== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1d1d1f;
+}
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ========== 通用卡片 ========== */
+.page-card {
+  background: #232324;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2a2a2c;
+  transition: box-shadow 0.2s ease;
+}
+
+/* ========== 搜索栏 ========== */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #2a2a2c;
+}
+
+/* ========== 表格区域 ========== */
+.table-wrapper {
+  margin-top: 16px;
+}
+
+/* ========== 页面标题 ========== */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #2a2a2c;
+}
+.page-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #F2F3F5;
+}
+
+/* ========== 链接样式 ========== */
+a {
+  color: #165DFF;
+  text-decoration: none;
+  cursor: pointer;
+}
+a:hover {
+  color: #4080FF;
+  text-decoration: underline;
+}
+a:active {
+  color: #0E42D2;
+}
+
+/* ========== Arco 组件深色覆盖 ========== */
+.arco-table {
+  --color-bg-2: #232324 !important;
+}
+.arco-table-th {
+  background: #2a2a2c !important;
+  color: #C9CDD4 !important;
+  border-color: #333335 !important;
+}
+.arco-table-td {
+  border-color: #333335 !important;
+  color: #F2F3F5 !important;
+  background: #232324 !important;
+}
+.arco-table-tr:hover .arco-table-td {
+  background: #2a2a2c !important;
+}
+/* 固定列背景色统一 */
+.arco-table-td-fixed-left,
+.arco-table-td-fixed-right,
+.arco-table-th-fixed-left,
+.arco-table-th-fixed-right {
+  background: inherit !important;
+}
+.arco-table-col-fixed-left::after,
+.arco-table-col-fixed-right::before {
+  background: none !important;
+}
+/* 去除表格白色边框 */
+.arco-table-border .arco-table-container,
+.arco-table-border .arco-table-th,
+.arco-table-border .arco-table-td,
+.arco-table-border .arco-table-cell,
+.arco-table .arco-table-container {
+  border-color: #333335 !important;
+}
+.arco-table-border,
+.arco-table {
+  border: none !important;
+}
+.arco-table-container {
+  border: none !important;
+}
+.arco-table-stripe .arco-table-tr:nth-child(even) .arco-table-td {
+  background: #1d1d1f !important;
+}
+.arco-table-stripe .arco-table-tr:nth-child(odd) .arco-table-td {
+  background: #232324 !important;
+}
+/* ========== Modal 弹窗增强 ========== */
+.arco-modal-wrapper {
+  background: transparent !important;
+}
+.arco-modal-mask {
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  background: rgba(0, 0, 0, 0.6) !important;
+  transition: opacity 0.2s ease, backdrop-filter 0.2s ease;
+}
+.arco-modal-wrapper .arco-modal {
+  background: #1d1d1f;
+  border: 1px solid rgba(22, 93, 255, 0.3);
+  border-radius: 12px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.6),
+    0 0 1px rgba(22, 93, 255, 0.4),
+    0 0 20px rgba(22, 93, 255, 0.08);
+  overflow: hidden;
+}
+.arco-modal-header {
+  border-color: #333335;
+  background: #232324;
+  padding: 16px 20px;
+}
+.arco-modal-header .arco-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #F2F3F5;
+}
+.arco-modal-body {
+  padding: 20px;
+}
+.arco-modal-footer {
+  border-color: #333335;
+  background: #232324;
+  padding: 12px 20px;
+}
+.arco-input-wrapper,
+.arco-select-view-single,
+.arco-select-view-multiple {
+  background: #2a2a2c !important;
+  border-color: #333335 !important;
+  color: #F2F3F5 !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.arco-input-wrapper:hover,
+.arco-select-view-single:hover {
+  border-color: #165DFF !important;
+}
+.arco-input-wrapper:focus-within,
+.arco-select-view-single.arco-select-view-focus {
+  border-color: #165DFF !important;
+  box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.15) !important;
+}
+.arco-form-label-item > label {
+  color: #C9CDD4 !important;
+}
+.arco-pagination {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+.arco-pagination-item-active {
+  color: #fff !important;
+}
+
+/* ========== 按钮交互增强 ========== */
+.arco-btn {
+  transition: all 0.2s ease;
+}
+.arco-btn:hover {
+  transform: translateY(-1px);
+}
+.arco-btn:active {
+  transform: translateY(0);
+}
+.arco-btn-text:hover {
+  background: rgba(22, 93, 255, 0.08);
+  transform: none;
+}
+/* 重置按钮（默认secondary按钮）字体颜色为黑色 */
+.arco-btn-secondary {
+  color: #1d2129 !important;
+}
+
+/* ========== 浏览器自动填充背景色修复 ========== */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #2a2a2c inset !important;
+  -webkit-text-fill-color: #F2F3F5 !important;
+  transition: background-color 5000s ease-in-out 0s;
+  caret-color: #F2F3F5;
+}
+
+/* ========== Tag 交互 ========== */
+.arco-tag {
+  transition: opacity 0.2s ease;
+}
+
+/* ========== 菜单项交互增强 ========== */
+.arco-menu-item {
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* ========== 页面切换过渡 ========== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ========== 表单校验错误信息去掉动画 ========== */
+.arco-form-item-message {
+  transition: none !important;
+  animation: none !important;
+}
+.arco-form-item-message-help-enter-active,
+.arco-form-item-message-help-leave-active {
+  transition: none !important;
+}
+.arco-form-item-message-help-enter-from,
+.arco-form-item-message-help-leave-to {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ========== 下拉菜单样式修复 ==========  */
+.arco-dropdown {
+  border: 1px solid #333335 !important;
+  background: #232324 !important;
+}
+.arco-dropdown-list-wrapper {
+  border: none !important;
+}
+.arco-dropdown .arco-dropdown-option {
+  color: #F2F3F5 !important;
+}
+.arco-dropdown .arco-dropdown-option:hover {
+  background: #2a2a2c !important;
+}

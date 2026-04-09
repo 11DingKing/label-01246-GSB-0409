@@ -1,0 +1,61 @@
+server:
+  port: 8082
+
+# Solon 数据源配置（db1! 表示默认数据源）
+solon.dataSources:
+  db1!:
+    class: "com.zaxxer.hikari.HikariDataSource"
+    jdbcUrl: "jdbc:mysql://localhost:3306/wind_power_diag?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&connectionCollation=utf8mb4_unicode_ci"
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    username: "root"
+    password: "root"
+    maximumPoolSize: 20
+
+# MyBatis-Plus 配置（db1 对应数据源名称）
+mybatis.db1:
+  mappers:
+    - "com.windpower.diag.mapper"
+  typeAliases:
+    - "com.windpower.diag.entity"
+  configuration:
+    mapUnderscoreToCamelCase: true
+    logImpl: "org.apache.ibatis.logging.slf4j.Slf4jImpl"
+  globalConfig:
+    dbConfig:
+      logicDeleteField: "deleted"
+      logicDeleteValue: "1"
+      logicNotDeleteValue: "0"
+
+# JWT 配置
+jwt:
+  secret: "WindPowerDiagSystem2025SecretKeyForJWTTokenGeneration!@#"
+  expiration: 86400000
+  header: "Authorization"
+  prefix: "Bearer "
+
+# 邮件配置
+mail:
+  host: "smtp.qq.com"
+  port: 465
+  username: "your-email@qq.com"
+  password: "your-smtp-password"
+  ssl: true
+  from: "your-email@qq.com"
+  fromName: "风力发电机故障诊断系统"
+
+# 邮箱验证配置
+email-verify:
+  baseUrl: "http://localhost:8082"
+  expireMinutes: 30
+
+# CSRF 配置
+csrf:
+  allowedOrigins: "http://localhost:5173,http://localhost:8082"
+
+# 日志
+solon.logging:
+  logger:
+    root:
+      level: INFO
+    com.windpower:
+      level: DEBUG
