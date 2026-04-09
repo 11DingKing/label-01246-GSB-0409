@@ -7,10 +7,10 @@ import com.windpower.diag.common.PageResult;
 import com.windpower.diag.entity.FaultRecord;
 import com.windpower.diag.entity.WindTurbine;
 import com.windpower.diag.mapper.FaultRecordMapper;
-import com.windpower.diag.mapper.SysUserMapper;
+import com.windpower.diag.event.EventPublisher;
+import com.windpower.diag.event.FaultEvent;
 import com.windpower.diag.mapper.WindTurbineMapper;
 import com.windpower.diag.service.DataScopeService;
-import com.windpower.diag.service.EmailService;
 import com.windpower.diag.service.FaultService;
 import org.noear.solon.annotation.Component;
 import org.noear.solon.annotation.Inject;
@@ -27,12 +27,10 @@ public class FaultServiceImpl implements FaultService {
     private FaultRecordMapper faultRecordMapper;
     @Ds
     private WindTurbineMapper windTurbineMapper;
-    @Ds
-    private SysUserMapper sysUserMapper;
     @Inject
     private DataScopeService dataScopeService;
     @Inject
-    private EmailService emailService;
+    private EventPublisher eventPublisher;
 
     @Override
     public PageResult<FaultRecord> page(int current, int size, String faultType, String faultLevel, Integer status, Long turbineId, Long userId) {
@@ -108,12 +106,17 @@ public class FaultServiceImpl implements FaultService {
         if (levelNum >= 3) {
             WindTurbine turbine = windTurbineMapper.selectById(faultRecord.getTurbineId());
             if (turbine != null && turbine.getDeptId() != null) {
-                List<String> adminEmails = sysUserMapper.selectAdminEmailsByDeptId(turbine.getDeptId());
-                if (!adminEmails.isEmpty()) {
-                    String faultTime = faultRecord.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-                    emailService.sendFaultAlertEmail(adminEmails, turbine.getTurbineCode(),
-                            faultRecord.getFaultType(), faultRecord.getFaultLevel(), faultTime);
-                }
+                String faultTime = faultRecord.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                FaultEvent faultEvent = new FaultEvent(
+                        faultRecord.getId(),
+                        turbine.getId(),
+                        turbine.getTurbineCode(),
+                        faultRecord.getFaultType(),
+                        faultRecord.getFaultLevel(),
+                        faultTime,
+                        turbine.getDeptId()
+                );
+                eventPublisher.publish(faultEvent);
             }
         }
         return faultRecord;
