@@ -62,16 +62,22 @@
         <a-button @click="resetSearch">重置</a-button>
       </div>
 
-      <a-table :data="tableData" :pagination="pagination" @page-change="onPageChange" :bordered="false" size="medium" :loading="loading">
+      <a-table :data="tableData" :pagination="pagination" @page-change="onPageChange" :bordered="false" size="medium" :loading="loading"
+        :row-style="(record) => levelNumber(record.faultLevel) >= 3 ? { background: 'rgba(245,63,63,0.08)' } : {}">
         <template #columns>
           <a-table-column title="故障编号" data-index="faultCode" :width="120" />
           <a-table-column title="设备" :width="140">
             <template #cell="{ record }">{{ record.turbineCode || '--' }} {{ record.turbineName ? `(${record.turbineName})` : '' }}</template>
           </a-table-column>
           <a-table-column title="故障类型" data-index="faultType" :width="120" />
-          <a-table-column title="等级" :width="80">
+          <a-table-column title="等级" :width="130">
             <template #cell="{ record }">
-              <a-tag :color="levelColor(record.faultLevel)">{{ levelText(record.faultLevel) }}</a-tag>
+              <a-tag :color="levelColor(record.faultLevel)">
+                {{ levelText(record.faultLevel) }}
+                <span v-if="levelNumber(record.faultLevel) >= 3" style="margin-left:4px;padding:1px 4px;background:#F53F3F;color:white;border-radius:4px;font-size:10px;">
+                  严重故障
+                </span>
+              </a-tag>
             </template>
           </a-table-column>
           <a-table-column title="状态" :width="90">
@@ -180,7 +186,8 @@ const typeChartOption = ref({})
 const levelChartOption = ref({})
 
 const levelText = (l) => ({ LOW: '低', MEDIUM: '中', HIGH: '高', CRITICAL: '严重' }[l] || l)
-const levelColor = (l) => ({ LOW: 'green', MEDIUM: 'orangered', HIGH: 'red', CRITICAL: 'purple' }[l] || 'gray')
+const levelNumber = (l) => ({ LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 }[l] || 0)
+const levelColor = (l) => ({ LOW: 'green', MEDIUM: 'orangered', HIGH: 'red', CRITICAL: 'red' }[l] || 'gray')
 const statusText = (s) => ({ 1: '待处理', 2: '处理中', 3: '已解决', 4: '已关闭' }[s] || '未知')
 const statusColor = (s) => ({ 1: 'red', 2: 'orangered', 3: 'green', 4: 'gray' }[s] || 'gray')
 
