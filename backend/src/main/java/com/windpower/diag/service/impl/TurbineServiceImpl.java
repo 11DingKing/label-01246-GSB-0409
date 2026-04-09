@@ -7,8 +7,11 @@ import com.windpower.diag.entity.TurbineSensorData;
 import com.windpower.diag.entity.WindTurbine;
 import com.windpower.diag.mapper.TurbineSensorDataMapper;
 import com.windpower.diag.mapper.WindTurbineMapper;
+import com.windpower.diag.service.DataScopeService;
 import com.windpower.diag.service.TurbineService;
 import org.noear.solon.annotation.Component;
+import org.noear.solon.annotation.Inject;
+import org.noear.solon.core.handle.Context;
 import org.noear.solon.data.annotation.Ds;
 
 import java.math.BigDecimal;
@@ -23,10 +26,13 @@ public class TurbineServiceImpl implements TurbineService {
     private WindTurbineMapper turbineMapper;
     @Ds
     private TurbineSensorDataMapper sensorDataMapper;
+    @Inject
+    private DataScopeService dataScopeService;
 
     @Override
     public PageResult<WindTurbine> page(int current, int size, String turbineCode, Integer status) {
         LambdaQueryWrapper<WindTurbine> wrapper = new LambdaQueryWrapper<>();
+        applyDataScopeFilter(wrapper);
         if (turbineCode != null && !turbineCode.isEmpty()) {
             wrapper.like(WindTurbine::getTurbineCode, turbineCode);
         }
@@ -40,7 +46,29 @@ public class TurbineServiceImpl implements TurbineService {
 
     @Override
     public List<WindTurbine> listAll() {
-        return turbineMapper.selectList(new LambdaQueryWrapper<WindTurbine>().orderByAsc(WindTurbine::getTurbineCode));
+        LambdaQueryWrapper<WindTurbine> wrapper = new LambdaQueryWrapper<>();
+        applyDataScopeFilter(wrapper);
+        wrapper.orderByAsc(WindTurbine::getTurbineCode);
+        return turbineMapper.selectList(wrapper);
+    }
+
+    private void applyDataScopeFilter(LambdaQueryWrapper<WindTurbine> wrapper) {
+        Context ctx = Context.current();
+        if (ctx == null) {
+            return;
+        }
+        Long userId = ctx.attr("userId", Long.class);
+        if (userId == null) {
+            return;
+        }
+        List<Long> visibleDeptIds = dataScopeService.getVisibleDeptIds(userId);
+        if (visibleDeptIds != null) {
+            if (visibleDeptIds.isEmpty()) {
+                wrapper.eq(WindTurbine::getDeptId, -1);
+            } else {
+                wrapper.in(WindTurbine::getDeptId, visibleDeptIds);
+            }
+        }
     }
 
     @Override
@@ -76,7 +104,9 @@ public class TurbineServiceImpl implements TurbineService {
     @Override
     public Map<String, Object> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
-        List<WindTurbine> allTurbines = turbineMapper.selectList(null);
+        LambdaQueryWrapper<WindTurbine> wrapper = new LambdaQueryWrapper<>();
+        applyDataScopeFilter(wrapper);
+        List<WindTurbine> allTurbines = turbineMapper.selectList(wrapper);
 
         long total = allTurbines.size();
         long running = allTurbines.stream().filter(t -> t.getStatus() == 1).count();

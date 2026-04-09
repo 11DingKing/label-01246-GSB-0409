@@ -8,4 +8,5 @@ public interface FaultService {
     PageResult<FaultRecord> page(int current, int size, String faultType, String faultLevel, Integer status, Long turbineId);
     FaultRecord getById(Long id);
     Map<String, Object> getStatistics();
+    boolean save(FaultRecord faultRecord);
 }

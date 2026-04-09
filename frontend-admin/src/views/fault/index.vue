@@ -62,16 +62,19 @@
         <a-button @click="resetSearch">重置</a-button>
       </div>
 
-      <a-table :data="tableData" :pagination="pagination" @page-change="onPageChange" :bordered="false" size="medium" :loading="loading">
+      <a-table :data="tableData" :pagination="pagination" @page-change="onPageChange" :bordered="false" size="medium" :loading="loading" :row-class-name="tableRowClassName">
         <template #columns>
           <a-table-column title="故障编号" data-index="faultCode" :width="120" />
           <a-table-column title="设备" :width="140">
             <template #cell="{ record }">{{ record.turbineCode || '--' }} {{ record.turbineName ? `(${record.turbineName})` : '' }}</template>
           </a-table-column>
           <a-table-column title="故障类型" data-index="faultType" :width="120" />
-          <a-table-column title="等级" :width="80">
+          <a-table-column title="等级" :width="100">
             <template #cell="{ record }">
-              <a-tag :color="levelColor(record.faultLevel)">{{ levelText(record.faultLevel) }}</a-tag>
+              <a-tag v-if="isSevereFault(record.faultLevel)" color="red" style="font-weight:bold;border-radius:10px;padding:0 10px;">
+                ⚠️ 严重故障
+              </a-tag>
+              <a-tag v-else :color="levelColor(record.faultLevel)">{{ levelText(record.faultLevel) }}</a-tag>
             </template>
           </a-table-column>
           <a-table-column title="状态" :width="90">
@@ -183,6 +186,18 @@ const levelText = (l) => ({ LOW: '低', MEDIUM: '中', HIGH: '高', CRITICAL: '�
 const levelColor = (l) => ({ LOW: 'green', MEDIUM: 'orangered', HIGH: 'red', CRITICAL: 'purple' }[l] || 'gray')
 const statusText = (s) => ({ 1: '待处理', 2: '处理中', 3: '已解决', 4: '已关闭' }[s] || '未知')
 const statusColor = (s) => ({ 1: 'red', 2: 'orangered', 3: 'green', 4: 'gray' }[s] || 'gray')
+
+const isSevereFault = (faultLevel) => {
+  const l = faultLevel != null ? String(faultLevel).toUpperCase() : ''
+  return l === 'HIGH' || l === 'CRITICAL' || l === '3' || l === '4'
+}
+
+const tableRowClassName = ({ record }) => {
+  if (isSevereFault(record.faultLevel)) {
+    return 'fault-severe-row'
+  }
+  return ''
+}
 
 function showDetail(record) {
   currentFault.value = record
@@ -390,6 +405,16 @@ onMounted(() => {
   .diagnosis-content, .solution-content {
     line-height: 1.6; white-space: pre-wrap;
   }
+}
+
+:deep(.fault-severe-row) {
+  background-color: rgba(245, 63, 63, 0.08) !important;
+}
+:deep(.fault-severe-row:hover) td {
+  background-color: rgba(245, 63, 63, 0.12) !important;
+}
+:deep(.fault-severe-row .arco-table-cell) {
+  background-color: transparent !important;
 }
 
 @media (max-width: 1200px) {
