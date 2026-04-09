@@ -19,6 +19,7 @@ public class WindTurbine implements Serializable {
     private Integer status; // 1-正常运行 2-告警 3-故障 4-停机维护 5-离线
     private LocalDateTime installDate;
     private LocalDateTime lastMaintenanceDate;
+    private Long deptId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @TableLogic
@@ -46,6 +47,8 @@ public class WindTurbine implements Serializable {
     public void setInstallDate(LocalDateTime installDate) { this.installDate = installDate; }
     public LocalDateTime getLastMaintenanceDate() { return lastMaintenanceDate; }
     public void setLastMaintenanceDate(LocalDateTime lastMaintenanceDate) { this.lastMaintenanceDate = lastMaintenanceDate; }
+    public Long getDeptId() { return deptId; }
+    public void setDeptId(Long deptId) { this.deptId = deptId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
