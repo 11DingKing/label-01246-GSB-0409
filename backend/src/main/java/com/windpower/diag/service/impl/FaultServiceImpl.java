@@ -5,24 +5,17 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.windpower.diag.common.PageResult;
 import com.windpower.diag.entity.FaultRecord;
-import com.windpower.diag.entity.SysUser;
-import com.windpower.diag.entity.SysUserRole;
-import com.windpower.diag.entity.WindTurbine;
+import com.windpower.diag.event.SevereFaultEvent;
 import com.windpower.diag.mapper.FaultRecordMapper;
-import com.windpower.diag.mapper.SysUserMapper;
-import com.windpower.diag.mapper.SysUserRoleMapper;
-import com.windpower.diag.mapper.WindTurbineMapper;
-import com.windpower.diag.service.EmailService;
 import com.windpower.diag.service.FaultService;
 import org.noear.solon.annotation.Component;
-import org.noear.solon.annotation.Inject;
+import org.noear.solon.core.event.EventBus;
 import org.noear.solon.data.annotation.Ds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class FaultServiceImpl implements FaultService {
@@ -30,14 +23,6 @@ public class FaultServiceImpl implements FaultService {
 
     @Ds
     private FaultRecordMapper faultRecordMapper;
-    @Ds
-    private WindTurbineMapper turbineMapper;
-    @Ds
-    private SysUserMapper userMapper;
-    @Ds
-    private SysUserRoleMapper userRoleMapper;
-    @Inject
-    private EmailService emailService;
 
     @Override
     public PageResult<FaultRecord> page(int current, int size, String faultType, String faultLevel, Integer status, Long turbineId) {
@@ -97,8 +82,9 @@ public class FaultServiceImpl implements FaultService {
 
         // 检查是否为严重故障 (level >= 3: HIGH=3, CRITICAL=4)
         if (isSevereFault(faultRecord.getFaultLevel())) {
-            log.info("检测到严重故障，准备发送告警邮件: faultCode={}", faultRecord.getFaultCode());
-            sendFaultAlert(faultRecord);
+            log.info("检测到严重故障，发布事件: faultCode={}", faultRecord.getFaultCode());
+            // 发布严重故障事件，由监听器异步处理邮件发送
+            EventBus.publish(new SevereFaultEvent(faultRecord));
         }
     }
 
@@ -112,77 +98,5 @@ public class FaultServiceImpl implements FaultService {
             return false;
         }
         return "HIGH".equals(faultLevel) || "CRITICAL".equals(faultLevel);
-    }
-
-    /**
-     * 发送严重故障告警邮件
-     */
-    private void sendFaultAlert(FaultRecord faultRecord) {
-        try {
-            // 获取风机信息
-            WindTurbine turbine = turbineMapper.selectById(faultRecord.getTurbineId());
-            if (turbine == null) {
-                log.warn("无法发送告警邮件：风机不存在, turbineId={}", faultRecord.getTurbineId());
-                return;
-            }
-
-            // 获取风机所属部门的所有管理员邮箱
-            List<String> adminEmails = getDeptAdminEmails(turbine.getDeptId());
-            if (adminEmails.isEmpty()) {
-                log.warn("无法发送告警邮件：部门 {} 没有管理员邮箱", turbine.getDeptId());
-                return;
-            }
-
-            // 发送告警邮件
-            emailService.sendFaultAlertEmail(adminEmails, faultRecord, turbine);
-        } catch (Exception e) {
-            log.error("发送严重故障告警邮件失败: faultCode={}", faultRecord.getFaultCode(), e);
-        }
-    }
-
-    /**
-     * 获取指定部门的所有管理员邮箱
-     */
-    private List<String> getDeptAdminEmails(Long deptId) {
-        if (deptId == null) {
-            return new ArrayList<>();
-        }
-
-        // 查询该部门下所有用户
-        LambdaQueryWrapper<SysUser> userWrapper = new LambdaQueryWrapper<>();
-        userWrapper.eq(SysUser::getDeptId, deptId);
-        userWrapper.eq(SysUser::getStatus, 1); // 只查询正常状态用户
-        List<SysUser> users = userMapper.selectList(userWrapper);
-
-        if (users.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // 获取用户ID列表
-        List<Long> userIds = users.stream()
-                .map(SysUser::getId)
-                .collect(Collectors.toList());
-
-        // 查询这些用户中哪些是管理员（role_code = 'admin'）
-        LambdaQueryWrapper<SysUserRole> urWrapper = new LambdaQueryWrapper<>();
-        urWrapper.in(SysUserRole::getUserId, userIds);
-        List<SysUserRole> userRoles = userRoleMapper.selectList(urWrapper);
-
-        // 获取管理员用户ID
-        Set<Long> adminUserIds = userRoles.stream()
-                .filter(ur -> {
-                    // 这里简化处理，假设 role_id 为 1 是管理员
-                    // 实际项目中应该查询 sys_role 表确认 role_code
-                    return ur.getRoleId() != null && ur.getRoleId() == 1L;
-                })
-                .map(SysUserRole::getUserId)
-                .collect(Collectors.toSet());
-
-        // 返回管理员邮箱列表
-        return users.stream()
-                .filter(u -> adminUserIds.contains(u.getId()))
-                .map(SysUser::getEmail)
-                .filter(email -> email != null && !email.isEmpty())
-                .collect(Collectors.toList());
     }
 }
