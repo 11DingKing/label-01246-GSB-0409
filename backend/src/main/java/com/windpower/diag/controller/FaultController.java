@@ -26,7 +26,7 @@ public class FaultController {
             @Param(required = false) String faultLevel,
             @Param(required = false) Integer status,
             @Param(required = false) Long turbineId) {
-        Long userId = ctx.attr("userId", Long.class);
+        Long userId = (Long) ctx.attr("userId");
         return Result.ok(faultService.page(current, size, faultType, faultLevel, status, turbineId, userId));
     }
 
@@ -39,14 +39,14 @@ public class FaultController {
     @Get
     @Mapping("/statistics")
     public Result<Map<String, Object>> statistics(Context ctx) {
-        Long userId = ctx.attr("userId", Long.class);
+        Long userId = (Long) ctx.attr("userId");
         return Result.ok(faultService.getStatistics(userId));
     }
 
     @Post
     @Mapping
     public Result<FaultRecord> create(Context ctx, @Body FaultRecord faultRecord) {
-        Long userId = ctx.attr("userId", Long.class);
+        Long userId = (Long) ctx.attr("userId");
         return Result.ok(faultService.create(faultRecord, userId));
     }
 }
