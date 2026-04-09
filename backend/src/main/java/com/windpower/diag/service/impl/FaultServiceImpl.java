@@ -5,15 +5,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.windpower.diag.common.PageResult;
 import com.windpower.diag.entity.FaultRecord;
 import com.windpower.diag.entity.WindTurbine;
+import com.windpower.diag.event.FaultAlarmEvent;
 import com.windpower.diag.mapper.FaultRecordMapper;
 import com.windpower.diag.mapper.SysUserMapper;
 import com.windpower.diag.mapper.WindTurbineMapper;
-import com.windpower.diag.service.EmailService;
 import com.windpower.diag.service.FaultService;
 import org.noear.solon.annotation.Component;
-import org.noear.solon.annotation.Inject;
 import org.noear.solon.data.annotation.Ds;
 import org.noear.solon.data.annotation.Transaction;
+import org.noear.solon.event.EventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +32,6 @@ public class FaultServiceImpl implements FaultService {
 
     @Ds
     private SysUserMapper sysUserMapper;
-
-    @Inject
-    private EmailService emailService;
 
     @Override
     public PageResult<FaultRecord> page(int current, int size, String faultType, String faultLevel, Integer status, Long turbineId) {
@@ -113,7 +110,8 @@ public class FaultServiceImpl implements FaultService {
 
             String subject = "【严重故障告警】风机编号: " + turbine.getTurbineCode();
             String content = buildAlarmContent(turbine, faultRecord);
-            emailService.sendFaultAlarmEmail(adminEmails, subject, content);
+            EventBus.publish(new FaultAlarmEvent(adminEmails, subject, content));
+            log.info("严重故障事件已发布: turbineCode={}, adminEmailCount={}", turbine.getTurbineCode(), adminEmails.size());
         } catch (Exception e) {
             log.error("发送告警邮件失败: error={}", e.getMessage(), e);
         }
