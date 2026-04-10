@@ -8,6 +8,7 @@ import org.noear.solon.annotation.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Properties;
 
 @Component
@@ -69,6 +70,58 @@ public class EmailServiceImpl implements EmailService {
             log.error("发送验证邮件失败: toEmail={}, error={}", toEmail, e.getMessage(), e);
             // 不抛异常，避免阻塞注册流程；记录日志即可
         }
+    }
+
+    @Override
+    public void sendFaultAlarmEmail(List<String> toEmails, String subject, String content) {
+        if (toEmails == null || toEmails.isEmpty()) {
+            log.warn("未指定邮件收件人，无法发送告警邮件");
+            return;
+        }
+        try {
+            Properties props = new Properties();
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", String.valueOf(port));
+            props.put("mail.smtp.auth", "true");
+            if (ssl) {
+                props.put("mail.smtp.ssl.enable", "true");
+                props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+                props.put("mail.smtp.socketFactory.port", String.valueOf(port));
+            }
+
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
+
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(from, fromName, "UTF-8"));
+
+            for (String email : toEmails) {
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            }
+
+            message.setSubject(subject, "UTF-8");
+            message.setContent(buildAlarmHtml(subject, content), "text/html;charset=UTF-8");
+
+            Transport.send(message);
+            log.info("告警邮件已发送: toEmails={}, subject={}", toEmails, subject);
+        } catch (Exception e) {
+            log.error("发送告警邮件失败: toEmails={}, error={}", toEmails, e.getMessage(), e);
+            // 不抛异常，避免阻塞业务流程
+        }
+    }
+
+    private String buildAlarmHtml(String subject, String content) {
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'></head><body style='font-family:Arial,sans-serif;background:#fff5f5;padding:20px;'>"
+                + "<div style='max-width:600px;margin:0 auto;background:#fff;border:1px solid #ffccc7;border-radius:8px;padding:40px;'>"
+                + "<h2 style='color:#cf1322;margin:0 0 20px 0;'>⚠️ " + subject + "</h2>"
+                + "<div style='font-size:16px;line-height:1.8;color:#333;'>" + content.replace("\n", "<br>") + "</div>"
+                + "<hr style='border:none;border-top:1px solid #eee;margin:20px 0;'>"
+                + "<p style='color:#999;font-size:12px;text-align:center;'>此邮件由系统自动发送，请及时处理</p>"
+                + "</div></body></html>";
     }
 
     private String buildVerifyHtml(String userName, String verifyUrl, int expireMinutes) {
