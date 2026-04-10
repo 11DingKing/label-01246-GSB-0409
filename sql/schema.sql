@@ -293,6 +293,7 @@ CREATE TABLE wind_turbine (
     latitude              DECIMAL(10,6) DEFAULT NULL COMMENT '纬度',
     longitude             DECIMAL(10,6) DEFAULT NULL COMMENT '经度',
     status                TINYINT       NOT NULL DEFAULT 1 COMMENT '状态: 1-正常运行 2-告警 3-故障 4-停机维护 5-离线',
+    dept_id               BIGINT        DEFAULT NULL COMMENT '所属部门ID',
     install_date          DATETIME      DEFAULT NULL COMMENT '安装日期',
     last_maintenance_date DATETIME      DEFAULT NULL COMMENT '最近维护日期',
     created_at            DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -17,6 +17,7 @@ public class WindTurbine implements Serializable {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Integer status; // 1-正常运行 2-告警 3-故障 4-停机维护 5-离线
+    private Long deptId; // 所属部门ID
     private LocalDateTime installDate;
     private LocalDateTime lastMaintenanceDate;
     private LocalDateTime createdAt;
@@ -42,6 +43,8 @@ public class WindTurbine implements Serializable {
     public void setLongitude(BigDecimal longitude) { this.longitude = longitude; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
+    public Long getDeptId() { return deptId; }
+    public void setDeptId(Long deptId) { this.deptId = deptId; }
     public LocalDateTime getInstallDate() { return installDate; }
     public void setInstallDate(LocalDateTime installDate) { this.installDate = installDate; }
     public LocalDateTime getLastMaintenanceDate() { return lastMaintenanceDate; }
