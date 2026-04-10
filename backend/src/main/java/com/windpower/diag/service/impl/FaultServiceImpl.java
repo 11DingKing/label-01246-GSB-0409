@@ -5,15 +5,21 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.windpower.diag.common.PageResult;
 import com.windpower.diag.entity.FaultRecord;
+import com.windpower.diag.event.SevereFaultEvent;
 import com.windpower.diag.mapper.FaultRecordMapper;
 import com.windpower.diag.service.FaultService;
 import org.noear.solon.annotation.Component;
+import org.noear.solon.core.event.EventBus;
 import org.noear.solon.data.annotation.Ds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Component
 public class FaultServiceImpl implements FaultService {
+    private static final Logger log = LoggerFactory.getLogger(FaultServiceImpl.class);
 
     @Ds
     private FaultRecordMapper faultRecordMapper;
@@ -62,5 +68,35 @@ public class FaultServiceImpl implements FaultService {
         stats.put("levelDistribution", levelCount);
 
         return stats;
+    }
+
+    @Override
+    public void save(FaultRecord faultRecord) {
+        // 设置创建时间
+        faultRecord.setCreatedAt(LocalDateTime.now());
+        faultRecord.setUpdatedAt(LocalDateTime.now());
+
+        // 保存故障记录
+        faultRecordMapper.insert(faultRecord);
+        log.info("故障记录已保存: faultCode={}, level={}", faultRecord.getFaultCode(), faultRecord.getFaultLevel());
+
+        // 检查是否为严重故障 (level >= 3: HIGH=3, CRITICAL=4)
+        if (isSevereFault(faultRecord.getFaultLevel())) {
+            log.info("检测到严重故障，发布事件: faultCode={}", faultRecord.getFaultCode());
+            // 发布严重故障事件，由监听器异步处理邮件发送
+            EventBus.publish(new SevereFaultEvent(faultRecord));
+        }
+    }
+
+    /**
+     * 判断是否为严重故障
+     * 故障等级: LOW=1, MEDIUM=2, HIGH=3, CRITICAL=4
+     * level >= 3 视为严重故障
+     */
+    private boolean isSevereFault(String faultLevel) {
+        if (faultLevel == null) {
+            return false;
+        }
+        return "HIGH".equals(faultLevel) || "CRITICAL".equals(faultLevel);
     }
 }

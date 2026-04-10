@@ -7,8 +7,10 @@ import com.windpower.diag.entity.TurbineSensorData;
 import com.windpower.diag.entity.WindTurbine;
 import com.windpower.diag.mapper.TurbineSensorDataMapper;
 import com.windpower.diag.mapper.WindTurbineMapper;
+import com.windpower.diag.service.DataScopeService;
 import com.windpower.diag.service.TurbineService;
 import org.noear.solon.annotation.Component;
+import org.noear.solon.annotation.Inject;
 import org.noear.solon.data.annotation.Ds;
 
 import java.math.BigDecimal;
@@ -23,9 +25,11 @@ public class TurbineServiceImpl implements TurbineService {
     private WindTurbineMapper turbineMapper;
     @Ds
     private TurbineSensorDataMapper sensorDataMapper;
+    @Inject
+    private DataScopeService dataScopeService;
 
     @Override
-    public PageResult<WindTurbine> page(int current, int size, String turbineCode, Integer status) {
+    public PageResult<WindTurbine> page(int current, int size, String turbineCode, Integer status, Long operatorUserId) {
         LambdaQueryWrapper<WindTurbine> wrapper = new LambdaQueryWrapper<>();
         if (turbineCode != null && !turbineCode.isEmpty()) {
             wrapper.like(WindTurbine::getTurbineCode, turbineCode);
@@ -33,14 +37,45 @@ public class TurbineServiceImpl implements TurbineService {
         if (status != null) {
             wrapper.eq(WindTurbine::getStatus, status);
         }
+
+        // 数据范围权限过滤
+        applyDataScopeFilter(wrapper, operatorUserId);
+
         wrapper.orderByAsc(WindTurbine::getTurbineCode);
         Page<WindTurbine> page = turbineMapper.selectPage(new Page<>(current, size), wrapper);
         return PageResult.of(page);
     }
 
     @Override
-    public List<WindTurbine> listAll() {
-        return turbineMapper.selectList(new LambdaQueryWrapper<WindTurbine>().orderByAsc(WindTurbine::getTurbineCode));
+    public List<WindTurbine> listAll(Long operatorUserId) {
+        LambdaQueryWrapper<WindTurbine> wrapper = new LambdaQueryWrapper<>();
+
+        // 数据范围权限过滤
+        applyDataScopeFilter(wrapper, operatorUserId);
+
+        wrapper.orderByAsc(WindTurbine::getTurbineCode);
+        return turbineMapper.selectList(wrapper);
+    }
+
+    /**
+     * 应用数据范围权限过滤
+     */
+    private void applyDataScopeFilter(LambdaQueryWrapper<WindTurbine> wrapper, Long operatorUserId) {
+        if (operatorUserId == null) {
+            return;
+        }
+
+        List<Long> visibleDeptIds = dataScopeService.getVisibleDeptIds(operatorUserId);
+        if (visibleDeptIds != null) {
+            // 按部门过滤
+            if (visibleDeptIds.isEmpty()) {
+                // 无可见部门，返回空结果
+                wrapper.eq(WindTurbine::getId, -1L);
+            } else {
+                wrapper.in(WindTurbine::getDeptId, visibleDeptIds);
+            }
+        }
+        // visibleDeptIds == null 表示全部数据，不加过滤
     }
 
     @Override

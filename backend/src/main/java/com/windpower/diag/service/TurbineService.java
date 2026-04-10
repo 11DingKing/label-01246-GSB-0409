@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface TurbineService {
-    PageResult<WindTurbine> page(int current, int size, String turbineCode, Integer status);
-    List<WindTurbine> listAll();
+    PageResult<WindTurbine> page(int current, int size, String turbineCode, Integer status, Long operatorUserId);
+    List<WindTurbine> listAll(Long operatorUserId);
     WindTurbine getById(Long id);
     Map<String, Object> getMonitorData(Long turbineId);
     Map<String, Object> getDashboardStats();
